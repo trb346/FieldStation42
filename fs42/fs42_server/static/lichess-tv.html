@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lichess TV - 4:3 Fullscreen Board</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Remove margins and lock viewport to exact 4:3 screen */
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #161512;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 4:3 Fullscreen Wrapper */
+    .tv-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Expand & zoom iframe so square board fills height and chops off header/footer UI */
+    .tv-wrapper iframe {
+      width: 133.33vh; /* Scale width to match 4:3 height */
+      height: 133.33vh; /* Make iframe square and zoom in to hide player bars */
+      border: none;
+      transform: scale(1.05); /* Slight extra zoom to eliminate edges */
+      transform-origin: center center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tv-wrapper">
+    <iframe
+      src="https://lichess.org/tv/frame?theme=brown&bg=dark"
+      allowtransparency="true"
+      frameborder="0">
+    </iframe>
+  </div>
+
+</body>
+</html>

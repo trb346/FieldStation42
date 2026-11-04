@@ -5,23 +5,23 @@ import os
 import sys
 import subprocess
 
-# Uses adafruit circuitpython via Blink - install blinka first:
-# https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/installing-circuitpython-on-raspberry-pi
-# pip3 install adafruit-circuitpython-matrixkeypad
-import digitalio
-import adafruit_matrixkeypad
-import board
-
-# also requires tm1673 library:
-# pip3 install raspberrypi-tm1637
+from gpiozero import Button
 import tm1637
 
 _l = logging.getLogger("CABLEBOX")
 
-# All pins are BCM GPIO numbers; runtime/cable_box.json overrides "keypad" and/or "display"
 PINOUT_FILE = "runtime/cable_box.json"
+
+# Verified BCM pin mapping for Hamlin CR-6000 bezel
+# Note: POWER (BCM 3 / Pin 5) is managed directly by the Linux kernel via dtoverlay=gpio-shutdown
 DEFAULT_PINOUT = {
-    "keypad": {"cols": [26, 20, 21], "rows": [5, 6, 13, 19]},
+    "buttons": {
+        "center": 16,     # Pin 36 (CENTER # - System Temp)
+        "tune_up": 20,    # Pin 38 (TUNE ▲ - Channel Up)
+        "tune_down": 26,  # Pin 37 (TUNE ▼ - Channel Down)
+        "select_up": 19,  # Pin 35 (SELECT + - Volume Up)
+        "select_down": 13 # Pin 33 (SELECT - - Volume Down)
+    },
     "display": {"clk": 17, "dio": 18},
 }
 
@@ -33,7 +33,7 @@ def load_pinout():
         try:
             with open(PINOUT_FILE) as fp:
                 overrides = json.load(fp)
-            for section in ("keypad", "display"):
+            for section in ("buttons", "display"):
                 if section in overrides:
                     pinout[section] = overrides[section]
         except Exception as e:
@@ -47,14 +47,12 @@ def get_temperature():
     _l.debug(f"Temperature reading: {a}")
     b = a.split("=")[1]
     c = float(b.split("'")[0])
-    # output in form: temp=49.4'C
     f = round((c * 1.8) + 32)
     return f
-    # return c
 
 
 def channel_label(num):
-    return f"{num:02d}".rjust(4)
+    return f"CH{num:02d}"
 
 
 class CableBox:
@@ -65,70 +63,85 @@ class CableBox:
 
         pinout = load_pinout()
 
+        # Display setup
         self.tm = tm1637.TM1637(clk=pinout["display"]["clk"], dio=pinout["display"]["dio"])
         self.tm.brightness(0)
         self.tm.show("FS42")
 
-        column_pins = [digitalio.DigitalInOut(getattr(board, f"D{n}")) for n in pinout["keypad"]["cols"]]
-        row_pins = [digitalio.DigitalInOut(getattr(board, f"D{n}")) for n in pinout["keypad"]["rows"]]
+        # Initialize gpiozero Buttons with internal pull-ups
+        btn_config = pinout["buttons"]
+        self.buttons = {}
+        for action, pin_num in btn_config.items():
+            self.buttons[action] = Button(pin_num, pull_up=True)
 
-        # Define keypad layout
-        keys = (("1", "2", "3"), ("4", "5", "6"), ("7", "8", "9"), ("down", "0", "up"))
-
-        self.keypad = adafruit_matrixkeypad.Matrix_Keypad(row_pins, column_pins, keys)
-        self.last_stat = ""
-
-        # mode to display and update temp
+        self.last_channel = None
+        self.last_play_state = None
         self.temp_mode = False
         self.last_button_time = time.monotonic()
 
         self.show_time = True
-        self.time_format = "%H:%M"
+        self.time_format = "%I:%M"
         try:
             with open("confs/main_config.json") as fp:
                 config = json.load(fp)
                 self.show_time = config.get("show_cable_box_time", True)
-                self.time_format = config.get("time_format", "%H:%M")
+                self.time_format = config.get("time_format", "%I:%M")
         except Exception:
             pass
 
     def send_command(self, command, channel=-1):
         as_obj = {"command": command, "channel": channel}
         as_str = json.dumps(as_obj)
+
         if command == "direct" and channel == 99:
-            # then we want to shut the player down
             os.system("pkill -SIGINT -f field_player.py")
             sys.exit(0)
-        elif command == "direct" and channel == 98:
-            # then we want to shutdown and halt the system
-            os.system("pkill -9 -f field_player.py")
-            os.system("killall mpv")
-            os.system("sudo halt")
-            sys.exit(-1)
-
         elif command == "direct" and channel == 97:
-            # temp = get_temperature()
-            # self.tm.show(f"{temp}*")
             self.temp_mode = True
+        elif command == "vol_up":
+            _l.info("Adjusting MPV volume up (+5)...")
+            # Direct IPC command to mpv
+            os.system('echo \'{"command": ["add", "volume", 5]}\' | socat - /tmp/mpvsocket 2>/dev/null')
+            # Forward remote-compatible payload to channel.socket
+            try:
+                with open(self.channel_socket, "w") as fp:
+                    fp.write(json.dumps({"command": "volume", "action": "up"}))
+            except Exception as e:
+                _l.error(f"Failed writing to channel socket: {e}")
+        elif command == "vol_down":
+            _l.info("Adjusting MPV volume down (-5)...")
+            # Direct IPC command to mpv
+            os.system('echo \'{"command": ["add", "volume", -5]}\' | socat - /tmp/mpvsocket 2>/dev/null')
+            # Forward remote-compatible payload to channel.socket
+            try:
+                with open(self.channel_socket, "w") as fp:
+                    fp.write(json.dumps({"command": "volume", "action": "down"}))
+            except Exception as e:
+                _l.error(f"Failed writing to channel socket: {e}")
         else:
             _l.info(f"Sending command: {as_str}")
             with open(self.channel_socket, "w") as fp:
                 fp.write(as_str)
 
     def check_status(self):
-        new_stat = None
-        with open(self.status_socket) as fp:
-            as_str = fp.read()
+        try:
+            with open(self.status_socket) as fp:
+                as_str = fp.read().strip()
+                if not as_str:
+                    return None
 
-            if as_str != self.last_stat:
-                _l.info(f"Status changed: {as_str}")
-                self.last_stat = as_str
-                try:
-                    new_stat = json.loads(as_str)
-                except:
-                    # assume that it was a partial read and try again next time
-                    _l.warning(f"Error decoding status: {as_str}")
-        return new_stat
+                data = json.loads(as_str)
+                current_chan = data.get("channel_number")
+                current_state = data.get("status")
+
+                if current_chan != self.last_channel or current_state != self.last_play_state:
+                    _l.info(f"Status changed: channel={current_chan}, state={current_state}")
+                    self.last_channel = current_chan
+                    self.last_play_state = current_state
+                    return data
+        except Exception:
+            pass
+        return None
 
     def check_press(self):
         try:
@@ -146,9 +159,10 @@ class CableBox:
         return None
 
     def read_keys(self):
-        pressed = self.keypad.pressed_keys
-        if len(pressed) == 1:
-            return pressed[0]
+        for action, btn in self.buttons.items():
+            if btn.is_pressed:
+                _l.info(f"Hardware input on BCM Pin {btn.pin.number} -> Action: {action}")
+                return action
         return None
 
     def event_loop(self):
@@ -157,41 +171,46 @@ class CableBox:
         last_selection_tick = -1
         channel_num = 0
         tick_count = 0
+
         while True:
             key_pressed = self.read_keys()
 
             if key_pressed:
                 self.temp_mode = False
                 self.last_button_time = time.monotonic()
-                self.tm.show("    ")
-                last_selection_tick = time.monotonic()
-                in_selection = True
 
-                as_num = None
-                _l.info(f"Key pressed: {key_pressed}")
-
-                if key_pressed in ("up", "down"):
-                    last_pressed = ""
-
-                if key_pressed == "up":
+                if key_pressed == "tune_up":
                     self.send_command("up")
                     channel_num += 1
                     self.tm.show("----")
                     in_selection = False
-                elif key_pressed == "down":
+
+                elif key_pressed == "tune_down":
                     if channel_num > 0:
                         self.send_command("down")
                         channel_num -= 1
                         self.tm.show("----")
                     in_selection = False
-                else:
-                    last_pressed += key_pressed
-                    as_num = int(last_pressed)
-                    self.tm.show(channel_label(as_num))
+
+                elif key_pressed == "select_up":
+                    _l.info("Volume Up requested")
+                    self.send_command("vol_up")
+                    self.tm.show(" VOL")
+                    in_selection = False
+
+                elif key_pressed == "select_down":
+                    _l.info("Volume Down requested")
+                    self.send_command("vol_down")
+                    self.tm.show(" VOL")
+                    in_selection = False
+
+                elif key_pressed == "center":
+                    _l.info("Center button pressed. Displaying temperature...")
+                    self.send_command("direct", 97)
+                    in_selection = False
 
                 time.sleep(0.3)
 
-            # see if we need to reset selection or apply it
             if in_selection:
                 tick_diff = time.monotonic() - last_selection_tick
                 if tick_diff > 1.5 or len(last_pressed) >= 3:
@@ -224,12 +243,15 @@ class CableBox:
                         _l.info(f"Set channel: {channel_num}")
                     else:
                         self.tm.show("FS42")
-                except:
+                except Exception:
                     self.tm.show("FS42")
 
             elapsed_since_press = time.monotonic() - self.last_button_time
             if self.show_time and elapsed_since_press > 15 and not in_selection and (tick_count % 10) == 0:
                 formatted = time.strftime(self.time_format, time.localtime())
+                if formatted.startswith("0"):
+                    formatted = " " + formatted[1:]
+
                 if ":" in formatted:
                     h, m = formatted.split(":", 1)
                     self.tm.numbers(int(h), int(m))
@@ -241,7 +263,15 @@ class CableBox:
 
             tick_count += 1
 
+
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s %(levelname)s:%(name)s:%(message)s", level=logging.INFO)
     cable_box = CableBox()
-    cable_box.event_loop()
+    try:
+        cable_box.event_loop()
+    except KeyboardInterrupt:
+        _l.info("Shutting down cable box control...")
+    finally:
+        for btn in cable_box.buttons.values():
+            btn.close()
+        _l.info("GPIO pins cleanly released.")
