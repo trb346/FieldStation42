@@ -5,6 +5,8 @@
     "channel_number": 13,
     "schedule_increment": 120,
     "commercial_free": true,
+    "commercial_dir": "shows",
+    "bump_dir": "shows",
     "content_dir": "catalog/home_videos",
     "day_templates": {
       "all_day": {

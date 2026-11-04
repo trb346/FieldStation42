@@ -6,6 +6,8 @@
     "network_type": "standard",
     "schedule_increment": 5,
     "break_strategy": "end",
+    "commercial_dir": "shows",
+    "bump_dir": "shows",
     "commercial_free": true,
     "day_templates": {
       "weekday": {

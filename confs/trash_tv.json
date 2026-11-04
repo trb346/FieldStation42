@@ -2,8 +2,6 @@
   "station_conf": {
     "network_name": "Trash TV",
     "channel_number": 16,
-    "video_keepaspect": false,
-    "panscan": 0,
     "content_dir": "catalog/trash_tv",
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
