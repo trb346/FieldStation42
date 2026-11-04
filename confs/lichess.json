@@ -1,0 +1,7 @@
+{"station_conf" : {
+    "network_name": "Lichess TV",
+    "network_type" : "web",
+    "refresh_interval": 0,
+    "channel_number": 17,
+    "web_url": "http://localhost:4242/static/lichess-tv.html"
+}}
