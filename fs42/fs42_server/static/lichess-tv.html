@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lichess TV - 4:3 Fullscreen Board</title>
+  <title>Lichess TV - CRT 4:3 Centered</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,46 +11,62 @@
       padding: 0;
     }
 
-    /* Remove margins and lock viewport to exact 4:3 screen */
+    /* Lock body to full CRT resolution */
     html, body {
       width: 100vw;
       height: 100vh;
       background-color: #161512;
+      color: #bababa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* 4:3 Fullscreen Wrapper */
-    .tv-wrapper {
+    /* Outer 4:3 frame wrapper */
+    .crt-card {
       width: 100vw;
       height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      position: relative;
+      padding: 2vh 2vw;
+      background: #161512;
     }
 
-    /* Expand & zoom iframe so square board fills height and chops off header/footer UI */
-    .tv-wrapper iframe {
-      width: 133.33vh; /* Scale width to match 4:3 height */
-      height: 133.33vh; /* Make iframe square and zoom in to hide player bars */
+    /* Constrain board area so all 8 ranks fit inside the vertical screen space */
+    .board-container {
+      width: 82vh;
+      height: 82vh;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .board-container iframe {
+      width: 100%;
+      height: 100%;
       border: none;
-      transform: scale(1.05); /* Slight extra zoom to eliminate edges */
-      transform-origin: center center;
     }
   </style>
 </head>
 <body>
 
-  <div class="tv-wrapper">
-    <iframe
-      src="https://lichess.org/tv/frame?theme=brown&bg=dark"
-      allowtransparency="true"
-      frameborder="0">
-    </iframe>
+  <div class="crt-card">
+    <div class="board-container">
+      <iframe
+        src="https://lichess.org/tv/frame?theme=brown&bg=dark"
+        allowtransparency="true"
+        scrolling="no">
+      </iframe>
+    </div>
   </div>
 
 </body>
