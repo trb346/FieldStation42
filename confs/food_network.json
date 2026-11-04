@@ -2,6 +2,8 @@
   "station_conf": {
     "network_name": "Food Network",
     "channel_number": 9,
+    "video_keepaspect": false,
+    "fullscreen": true,
     "content_dir": "catalog/food_network",
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",

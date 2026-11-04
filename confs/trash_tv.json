@@ -3,6 +3,8 @@
     "network_name": "Trash TV",
     "channel_number": 16,
     "content_dir": "catalog/trash_tv",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

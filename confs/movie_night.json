@@ -2,6 +2,8 @@
   "station_conf": {
     "network_name": "Movie Night",
     "channel_number": 12,
+    "video_keepaspect": false,
+    "fullscreen": true,
     "content_dir": "catalog/movie_night",
     "network_type": "standard",
     "schedule_increment": 5,

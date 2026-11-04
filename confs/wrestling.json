@@ -3,6 +3,8 @@
     "network_name": "Wrestling",
     "channel_number": 14,
     "content_dir": "catalog/wrestling",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

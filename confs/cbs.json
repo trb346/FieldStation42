@@ -3,6 +3,8 @@
     "network_name": "CBS",
     "channel_number": 3,
     "content_dir": "catalog/cbs",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

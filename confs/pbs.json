@@ -3,6 +3,8 @@
     "network_name": "PBS",
     "channel_number": 5,
     "content_dir": "catalog/pbs",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

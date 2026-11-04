@@ -3,6 +3,8 @@
     "network_name": "Infomercials",
     "channel_number": 15,
     "content_dir": "catalog/infomercials",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

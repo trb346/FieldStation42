@@ -3,6 +3,8 @@
     "network_name": "FOX",
     "channel_number": 8,
     "content_dir": "catalog/fox",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

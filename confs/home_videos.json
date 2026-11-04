@@ -3,6 +3,8 @@
     "network_name": "Home Videos",
     "network_type": "standard",
     "channel_number": 13,
+    "video_keepaspect": false,
+    "fullscreen": true,
     "schedule_increment": 120,
     "commercial_free": true,
     "commercial_dir": "shows",

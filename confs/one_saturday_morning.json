@@ -3,6 +3,8 @@
     "network_name": "One Saturday Morning",
     "channel_number": 4,
     "content_dir": "catalog/one_saturday_morning",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

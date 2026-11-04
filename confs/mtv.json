@@ -3,6 +3,8 @@
     "network_name": "MTV",
     "channel_number": 10,
     "content_dir": "catalog/mtv",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
     "schedule_increment": 30,

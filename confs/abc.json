@@ -2,6 +2,8 @@
   "station_conf": {
     "network_name": "ABC",
     "channel_number": 2,
+    "video_keepaspect": false,
+    "fullscreen": true,
     "content_dir": "catalog/abc",
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",

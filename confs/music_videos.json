@@ -3,6 +3,8 @@
     "network_name": "Music Videos",
     "channel_number": 11,
     "content_dir": "catalog/music_videos",
+    "video_keepaspect": false,
+    "fullscreen": true,
     "schedule_increment": 60,
     "commercial_free": true,
     "commercial_dir": "shows",
