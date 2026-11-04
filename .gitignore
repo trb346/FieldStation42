@@ -7,17 +7,17 @@ __pycache__/
 *.bin
 *.bak
 runtime/
-catalog/
+#catalog/
 env/
 local/
 *.kdev4*
 *.kate-swp
-*confs/*.json
-*confs/mine
+#*confs/*.json
+#*confs/mine
 osd/osd.json
 fs42/guide_render/static/90s.html
 .idea/
-*confs/
+#*confs/
 # C extensions
 *.so
 
