@@ -1,43 +1,17 @@
 {
   "station_conf": {
-    "network_name": "TGIF",
     "channel_number": 6,
+    "network_name": "TGIF",
+    "content_dir": "catalog/tgif",
+    "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,
-    "content_dir": "catalog/tgif",
+    "schedule_increment": 0,
+    "commercial_free": true,
     "commercial_dir": "../commercials",
     "bump_dir": "../commercials",
-    "schedule_increment": 30,
-    "commercial_free": false,
-    "break_strategy": "standard",
     "day_templates": {
-      "weekday": {
-        "0": {"tags": "shows"},
-        "1": {"tags": "shows"},
-        "2": {"tags": "shows"},
-        "3": {"tags": "shows"},
-        "4": {"tags": "shows"},
-        "5": {"tags": "shows"},
-        "6": {"tags": "shows"},
-        "7": {"tags": "shows"},
-        "8": {"tags": "shows"},
-        "9": {"tags": "shows"},
-        "10": {"tags": "shows"},
-        "11": {"tags": "shows"},
-        "12": {"tags": "shows"},
-        "13": {"tags": "shows"},
-        "14": {"tags": "shows"},
-        "15": {"tags": "shows"},
-        "16": {"tags": "shows"},
-        "17": {"tags": "shows"},
-        "18": {"tags": "shows"},
-        "19": {"tags": "shows"},
-        "20": {"tags": "shows"},
-        "21": {"tags": "shows"},
-        "22": {"tags": "shows"},
-        "23": {"tags": "shows"}
-      },
-      "weekend": {
+      "all_day": {
         "0": {"tags": "shows"},
         "1": {"tags": "shows"},
         "2": {"tags": "shows"},
@@ -64,12 +38,12 @@
         "23": {"tags": "shows"}
       }
     },
-    "monday": "weekday",
-    "tuesday": "weekday",
-    "wednesday": "weekday",
-    "thursday": "weekday",
-    "friday": "weekday",
-    "saturday": "weekend",
-    "sunday": "weekend"
+    "monday": "all_day",
+    "tuesday": "all_day",
+    "wednesday": "all_day",
+    "thursday": "all_day",
+    "friday": "all_day",
+    "saturday": "all_day",
+    "sunday": "all_day"
   }
 }

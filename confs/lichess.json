@@ -2,8 +2,8 @@
     "network_name": "Lichess TV",
     "network_type" : "web",
     "refresh_interval": 0,
-    "channel_number": 17,
-    "video_keepaspect": false,
+    "channel_number": 18,
+    "video_keepaspect": true,
     "fullscreen": true,
     "web_url": "http://localhost:4242/static/lichess-tv.html"
 }}

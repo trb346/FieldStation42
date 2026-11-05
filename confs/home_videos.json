@@ -1,15 +1,15 @@
 {
   "station_conf": {
-    "network_name": "Home Videos",
-    "network_type": "standard",
     "channel_number": 13,
+    "network_name": "Home Videos",
+    "content_dir": "catalog/home_videos",
+    "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,
-    "schedule_increment": 120,
+    "schedule_increment": 0,
     "commercial_free": true,
     "commercial_dir": "shows",
     "bump_dir": "shows",
-    "content_dir": "catalog/home_videos",
     "day_templates": {
       "all_day": {
         "0": {"tags": "shows"},
