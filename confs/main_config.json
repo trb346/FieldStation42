@@ -1,0 +1,10 @@
+{
+  "normalize_titles": true,
+  "title_patterns": [
+    {
+      "pattern": "^(.+?)[\\s._-]+-[\\s._-]+.*$",
+      "group": 1,
+      "description": "Strip everything after hyphen"
+    }
+  ]
+}
