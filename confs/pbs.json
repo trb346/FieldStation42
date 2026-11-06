@@ -8,8 +8,8 @@
     "fullscreen": true,
     "schedule_increment": 0,
     "commercial_free": true,
-    "commercial_dir": "../commercials",
-    "bump_dir": "../commercials",
+    "commercial_dir": "commercials",
+    "bump_dir": "bumps",
     "day_templates": {
       "all_day": {
         "0": {"tags": "shows"},
