@@ -4,6 +4,9 @@ import time
 import os
 import sys
 import subprocess
+import re
+import urllib.request
+import urllib.error
 
 from gpiozero import Button
 import tm1637
@@ -12,11 +15,9 @@ _l = logging.getLogger("CABLEBOX")
 
 PINOUT_FILE = "runtime/cable_box.json"
 
-# Verified BCM pin mapping for Hamlin CR-6000 bezel
-# Note: POWER (BCM 3 / Pin 5) is managed directly by the Linux kernel via dtoverlay=gpio-shutdown
 DEFAULT_PINOUT = {
     "buttons": {
-        "center": 16,     # Pin 36 (CENTER # - System Temp)
+        "center": 16,     # Pin 36 (CENTER # - Guide/Home)
         "tune_up": 20,    # Pin 38 (TUNE ▲ - Channel Up)
         "tune_down": 26,  # Pin 37 (TUNE ▼ - Channel Down)
         "select_up": 19,  # Pin 35 (SELECT + - Volume Up)
@@ -55,6 +56,15 @@ def channel_label(num):
     return f"CH{num:02d}"
 
 
+def volume_label(vol_val):
+    """Formats volume level for TM1637 display showing ONLY numbers right-aligned (e.g., '  30' or ' 100')."""
+    try:
+        clean_val = int(re.sub(r"[^\d]", "", str(vol_val)))
+        return f"{clean_val:4d}"
+    except (ValueError, TypeError):
+        return "    "
+
+
 class CableBox:
     def __init__(self, channel_socket="runtime/channel.socket", status_socket="runtime/play_status.socket", press_socket="runtime/press.socket"):
         self.channel_socket = channel_socket
@@ -89,6 +99,64 @@ class CableBox:
         except Exception:
             pass
 
+    def send_volume_post(self, action):
+        """Sends HTTP POST to player API and returns the volume percentage."""
+        endpoints = [
+            f"http://localhost:4242/player/volume/{action}",
+            f"http://localhost:4242/api/player/volume/{action}"
+        ]
+        
+        for url in endpoints:
+            try:
+                req = urllib.request.Request(
+                    url, 
+                    data=b"", 
+                    headers={"Content-Type": "application/json", "User-Agent": "CableBox-GPIO"}
+                )
+                with urllib.request.urlopen(req, timeout=1) as resp:
+                    if resp.status == 200:
+                        body = resp.read().decode("utf-8")
+                        data = json.loads(body)
+                        vol = data.get("volume")
+                        _l.info(f"Volume {action} success: volume={vol}")
+                        return vol
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    continue
+                _l.error(f"HTTP Error {e.code} for {url}")
+            except Exception as e:
+                _l.error(f"Failed POST to {url}: {e}")
+                
+        _l.error(f"Could not reach working volume endpoint for '{action}'")
+        return None
+
+    def send_guide_post(self):
+        """Sends HTTP POST to trigger channel guide matching remote button behavior."""
+        endpoints = [
+            "http://localhost:4242/player/channels/guide",
+            "http://localhost:4242/api/player/channels/guide"
+        ]
+        for url in endpoints:
+            try:
+                req = urllib.request.Request(
+                    url,
+                    data=b"",
+                    headers={"Content-Type": "application/json", "User-Agent": "CableBox-GPIO"}
+                )
+                with urllib.request.urlopen(req, timeout=1) as resp:
+                    if resp.status == 200:
+                        _l.info(f"Guide command POST success via {url}")
+                        return True
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    continue
+                _l.error(f"HTTP Error {e.code} for {url}")
+            except Exception as e:
+                _l.error(f"Failed POST to {url}: {e}")
+
+        _l.error("Could not reach working guide endpoint")
+        return False
+
     def send_command(self, command, channel=-1):
         as_obj = {"command": command, "channel": channel}
         as_str = json.dumps(as_obj)
@@ -99,29 +167,19 @@ class CableBox:
         elif command == "direct" and channel == 97:
             self.temp_mode = True
         elif command == "vol_up":
-            _l.info("Adjusting MPV volume up (+5)...")
-            # Direct IPC command to mpv
-            os.system('echo \'{"command": ["add", "volume", 5]}\' | socat - /tmp/mpvsocket 2>/dev/null')
-            # Forward remote-compatible payload to channel.socket
-            try:
-                with open(self.channel_socket, "w") as fp:
-                    fp.write(json.dumps({"command": "volume", "action": "up"}))
-            except Exception as e:
-                _l.error(f"Failed writing to channel socket: {e}")
+            _l.info("Sending Volume Up POST request...")
+            return self.send_volume_post("up")
         elif command == "vol_down":
-            _l.info("Adjusting MPV volume down (-5)...")
-            # Direct IPC command to mpv
-            os.system('echo \'{"command": ["add", "volume", -5]}\' | socat - /tmp/mpvsocket 2>/dev/null')
-            # Forward remote-compatible payload to channel.socket
-            try:
-                with open(self.channel_socket, "w") as fp:
-                    fp.write(json.dumps({"command": "volume", "action": "down"}))
-            except Exception as e:
-                _l.error(f"Failed writing to channel socket: {e}")
+            _l.info("Sending Volume Down POST request...")
+            return self.send_volume_post("down")
+        elif command == "guide":
+            _l.info("Sending Guide POST request...")
+            return self.send_guide_post()
         else:
             _l.info(f"Sending command: {as_str}")
             with open(self.channel_socket, "w") as fp:
                 fp.write(as_str)
+            return None
 
     def check_status(self):
         try:
@@ -194,33 +252,25 @@ class CableBox:
 
                 elif key_pressed == "select_up":
                     _l.info("Volume Up requested")
-                    self.send_command("vol_up")
-                    self.tm.show(" VOL")
+                    vol = self.send_command("vol_up")
+                    if vol is not None:
+                        self.tm.show(volume_label(vol))
                     in_selection = False
 
                 elif key_pressed == "select_down":
                     _l.info("Volume Down requested")
-                    self.send_command("vol_down")
-                    self.tm.show(" VOL")
+                    vol = self.send_command("vol_down")
+                    if vol is not None:
+                        self.tm.show(volume_label(vol))
                     in_selection = False
 
                 elif key_pressed == "center":
-                    _l.info("Center button pressed. Displaying temperature...")
-                    self.send_command("direct", 97)
+                    _l.info("Center button pressed. Requesting Channel Guide...")
+                    self.send_command("guide")
+                    self.tm.show("LIST")
                     in_selection = False
 
                 time.sleep(0.3)
-
-            if in_selection:
-                tick_diff = time.monotonic() - last_selection_tick
-                if tick_diff > 1.5 or len(last_pressed) >= 3:
-                    _l.info(f"Applying selection {as_num}")
-                    self.tm.show(channel_label(as_num))
-                    last_selection_tick = -1
-                    in_selection = False
-                    last_pressed = ""
-                    channel_num = as_num
-                    self.send_command("direct", channel_num)
 
             time.sleep(0.1)
 
