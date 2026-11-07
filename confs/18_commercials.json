@@ -1,7 +1,7 @@
 {
   "station_conf": {
     "channel_number": 18,
-    "network_name": "24/7 Commercials",
+    "network_name": "Commercials",
     "content_dir": "catalog/commercials/shows",
     "network_type": "loop",
     "shuffle_loop": true,

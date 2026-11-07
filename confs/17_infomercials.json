@@ -1,7 +1,7 @@
 {
   "station_conf": {
     "channel_number": 17,
-    "network_name": "24/7 Infomercials",
+    "network_name": "Infomercials",
     "content_dir": "catalog/infomercials/shows",
     "network_type": "loop",
     "shuffle_loop": true,
