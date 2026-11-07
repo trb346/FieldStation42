@@ -1,8 +1,8 @@
 {
   "station_conf": {
     "channel_number": 10,
-    "network_name": "MTV",
-    "content_dir": "catalog/mtv",
+    "network_name": "Food Network",
+    "content_dir": "catalog/food_network",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,

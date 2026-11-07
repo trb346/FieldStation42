@@ -1,8 +1,8 @@
 {
   "station_conf": {
-    "channel_number": 17,
-    "network_name": "24/7 Commercials",
-    "content_dir": "catalog/commercials",
+    "channel_number": 8,
+    "network_name": "Disney",
+    "content_dir": "catalog/disney",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,

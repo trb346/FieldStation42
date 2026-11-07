@@ -1,6 +1,6 @@
 {
   "station_conf": {
-    "channel_number": 15,
+    "channel_number": 16,
     "network_name": "Trash TV",
     "content_dir": "catalog/trash_tv",
     "network_type": "standard",

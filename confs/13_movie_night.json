@@ -1,8 +1,8 @@
 {
   "station_conf": {
-    "channel_number": 9,
-    "network_name": "Food Network",
-    "content_dir": "catalog/food_network",
+    "channel_number": 13,
+    "network_name": "Movie Night",
+    "content_dir": "catalog/movie_night",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,

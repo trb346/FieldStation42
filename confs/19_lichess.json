@@ -1,8 +1,9 @@
 {"station_conf" : {
     "network_name": "Lichess TV",
+    "network_long_name": "Lichess TV - Top Rated Game",
     "network_type" : "web",
     "refresh_interval": 0,
-    "channel_number": 18,
+    "channel_number": 19,
     "video_keepaspect": true,
     "fullscreen": true,
     "web_url": "http://localhost:4242/static/lichess-tv.html"

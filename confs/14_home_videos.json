@@ -1,8 +1,8 @@
 {
   "station_conf": {
     "channel_number": 14,
-    "network_name": "Wrestling",
-    "content_dir": "catalog/wrestling",
+    "network_name": "Home Videos",
+    "content_dir": "catalog/home_videos",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,

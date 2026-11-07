@@ -1,8 +1,8 @@
 {
   "station_conf": {
-    "channel_number": 16,
-    "network_name": "24/7 Infomercials",
-    "content_dir": "catalog/infomercials",
+    "channel_number": 9,
+    "network_name": "FOX",
+    "content_dir": "catalog/fox",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,

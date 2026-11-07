@@ -1,0 +1,11 @@
+{
+  "station_conf": {
+    "channel_number": 12,
+    "network_name": "Music Videos",
+    "content_dir": "catalog/music_videos/shows/music_videos",
+    "network_type": "loop",
+    "shuffle_loop": true,
+    "video_keepaspect": false,
+    "fullscreen": true
+  }
+}

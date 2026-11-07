@@ -1,8 +1,8 @@
 {
   "station_conf": {
-    "channel_number": 8,
-    "network_name": "FOX",
-    "content_dir": "catalog/fox",
+    "channel_number": 15,
+    "network_name": "Wrestling",
+    "content_dir": "catalog/wrestling",
     "network_type": "standard",
     "video_keepaspect": false,
     "fullscreen": true,
